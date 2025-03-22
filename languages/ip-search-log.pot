@@ -1,0 +1,99 @@
+# Copyright (C) 2023 IP Search Log
+# This file is distributed under the same license as the IP Search Log package.
+msgid ""
+msgstr ""
+"Project-Id-Version: IP Search Log 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/ip-search-log\n"
+"POT-Creation-Date: 2023-09-15 12:00:00+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2023-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"X-Generator: WP-CLI 2.7.1\n"
+"X-Domain: ip-search-log\n"
+
+#: ip-search-log.php:24
+msgid "IP Search Log"
+msgstr ""
+
+#: ip-search-log.php:25
+msgid "Search Log"
+msgstr ""
+
+#: ip-search-log.php:104
+msgid "Clear All Records"
+msgstr ""
+
+#: ip-search-log.php:105
+msgid "Export to Excel"
+msgstr ""
+
+#: ip-search-log.php:126
+msgid "Are you sure you want to delete all search log entries? This action cannot be undone."
+msgstr ""
+
+#: ip-search-log.php:127
+msgid "Confirm"
+msgstr ""
+
+#: ip-search-log.php:128
+msgid "Cancel"
+msgstr ""
+
+#: ip-search-log.php:146
+msgid "All records have been successfully cleared."
+msgstr ""
+
+#: ip-search-log.php:149
+msgid "An error occurred while clearing records."
+msgstr ""
+
+#: ip-search-log.php:181
+msgid "Download XLSX"
+msgstr ""
+
+#: ip-search-log.php:183
+msgid "Download CSV"
+msgstr ""
+
+#: ip-search-log.php:186
+msgid "An error occurred during export."
+msgstr ""
+
+#: includes/class-search-log-list-table.php:18
+msgid "Search query"
+msgstr ""
+
+#: includes/class-search-log-list-table.php:19
+msgid "Search queries"
+msgstr ""
+
+#: includes/class-search-log-list-table.php:37
+msgid "Query"
+msgstr ""
+
+#: includes/class-search-log-list-table.php:38
+msgid "Last Query Date"
+msgstr ""
+
+#: includes/class-search-log-list-table.php:39
+msgid "IP Address"
+msgstr ""
+
+#: includes/class-search-log-list-table.php:40
+msgid "Count"
+msgstr ""
+
+#: includes/class-search-log-list-table.php:56
+msgid "No search queries found."
+msgstr ""
+
+#: includes/class-search-log-exporter.php:69
+msgid "Export completed successfully."
+msgstr ""
+
+#: includes/class-search-log-exporter.php:87
+msgid "Export failed. PhpSpreadsheet library not available."
+msgstr "" 

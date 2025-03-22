@@ -1,0 +1,64 @@
+/**
+ * Styles for IP Search Log plugin admin panel
+ */
+
+/* General styles */
+.ip-search-log-wrap {
+    margin: 20px 0;
+}
+
+/* Button styles */
+.button-container {
+    margin-bottom: 10px;
+}
+
+/* Table styles */
+.wp-list-table .column-search_query {
+    width: 30%;
+}
+
+/* Message styles */
+#search-log-message {
+    padding: 10px;
+    margin: 10px 0;
+}
+
+/* Search query link styles */
+.search-query-link {
+    text-decoration: none;
+}
+
+/* Modal confirmation window styles */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    max-width: 500px;
+    width: 100%;
+}
+
+.modal-body {
+    margin-bottom: 15px;
+}
+
+.modal-footer {
+    text-align: right;
+}
+
+.modal-footer button {
+    margin-left: 10px;
+}
