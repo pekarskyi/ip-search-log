@@ -2,7 +2,7 @@
 /**
  * Plugin Name: IP Search Log
  * Description: Plugin for logging user search queries
- * Version: 1.0
+ * Version: 1.0.0
  * Author: Inwebpress
  * Author URI: https://inwebpress.com
  * Plugin URI: https://github.com/pekarskyi/ip-search-log
@@ -238,3 +238,15 @@ class IP_Search_Logger {
 
 // Initialize the plugin
 $ip_search_logger = new IP_Search_Logger();
+
+// Adding update check via GitHub
+require_once plugin_dir_path( __FILE__ ) . 'updates/github-updater.php';
+if ( function_exists( 'ip_search_log_github_updater_init' ) ) {
+    ip_search_log_github_updater_init(
+        __FILE__,       // Plugin file path
+        'pekarskyi',     // Your GitHub username
+        '',              // Access token (empty)
+        'ip-search-log' // Repository name (optional)
+        // Other parameters are determined automatically
+    );
+} 

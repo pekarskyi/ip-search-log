@@ -55,3 +55,8 @@ To create translations:
 - The plugin uses WordPress nonces to protect against CSRF attacks
 - All input data is sanitized and verified before use
 - Exported files are stored in a protected directory
+
+## Changelog
+
+1.3 - 23.03.2025:
+- ADDED: plugin version check and update function
