@@ -2,6 +2,8 @@
 
 WordPress plugin for logging user search queries on the site.
 
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/pekarskyi/ip-search-log?style=for-the-badge)](https://GitHub.com/pekarskyi/ip-search-log/releases/)
+
 ## Description
 
 IP Search Log keeps track of user search queries, storing data about:
@@ -20,11 +22,6 @@ The plugin provides a convenient interface in the WordPress admin panel for view
 - **Data Sorting**: Ability to sort by different fields (query, date, IP, count).
 - **Data Export**: Export all data to Excel (.xlsx) or CSV format.
 - **Data Clearing**: Ability to clear all log records.
-
-## Requirements
-
-- WordPress 5.8 or higher
-- PHP 7.4 or higher
 
 ## Installation
 
@@ -58,7 +55,3 @@ To create translations:
 - The plugin uses WordPress nonces to protect against CSRF attacks
 - All input data is sanitized and verified before use
 - Exported files are stored in a protected directory
-
-## License
-
-This plugin is distributed under the GPL v2 license or later version. 
