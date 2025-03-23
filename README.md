@@ -58,5 +58,5 @@ To create translations:
 
 ## Changelog
 
-1.3 - 23.03.2025:
+1.0.0 - 23.03.2025:
 - ADDED: plugin version check and update function
