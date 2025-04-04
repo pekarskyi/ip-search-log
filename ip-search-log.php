@@ -2,12 +2,14 @@
 /**
  * Plugin Name: IP Search Log
  * Description: Plugin for logging user search queries
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Inwebpress
  * Author URI: https://inwebpress.com
  * Plugin URI: https://github.com/pekarskyi/ip-search-log
  * Text Domain: ip-search-log
  * Domain Path: /languages
+ * Requires at least: 6.7.0
+ * Tested up to: 6.7.2
  * Requires PHP: 7.4
  */
 
@@ -15,6 +17,10 @@
 if (!defined('ABSPATH')) {
     exit;
 }
+
+// Define log file path
+define('IP_SEARCH_LOG_DIR', ABSPATH . 'wp-content/ip-search-log-logs');
+define('IP_SEARCH_LOG_FILE', IP_SEARCH_LOG_DIR . '/ip-search-log-logs.log');
 
 // Load plugin text domain for translations
 function ip_search_log_load_textdomain() {
@@ -24,24 +30,24 @@ add_action('plugins_loaded', 'ip_search_log_load_textdomain');
 
 // Include required files
 require_once plugin_dir_path(__FILE__) . 'includes/class-search-log-list-table.php';
-require_once plugin_dir_path(__FILE__) . 'includes/class-search-log-exporter.php';
 
 // Main plugin class
 class IP_Search_Logger {
     // Class properties
     private $table_name;
+    private $log_file;
 
     // Constructor
     public function __construct() {
         global $wpdb;
         $this->table_name = $wpdb->prefix . 'ip_search_log';
+        $this->log_file = IP_SEARCH_LOG_FILE;
         
         // Register hooks
         add_action('admin_menu', array($this, 'register_admin_menu'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
         add_action('pre_get_posts', array($this, 'log_search_query'));
         add_action('wp_ajax_clear_search_log', array($this, 'ajax_clear_search_log'));
-        add_action('wp_ajax_export_search_log', array($this, 'ajax_export_search_log'));
         
         // Додаємо посилання на сторінку журналу в таблиці плагінів
         $plugin_basename = plugin_basename(__FILE__);
@@ -53,6 +59,10 @@ class IP_Search_Logger {
     
     // Create database table on plugin activation
     public function create_table() {
+        // Переконуємося, що файл логів існує і є доступним для запису
+        $this->init_log_file();
+        
+        // Залишаємо для сумісності
         global $wpdb;
         
         $charset_collate = $wpdb->get_charset_collate();
@@ -69,6 +79,52 @@ class IP_Search_Logger {
         
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql);
+    }
+    
+    // Initialize log file
+    private function init_log_file() {
+        // Переконуємося, що директорія існує
+        if (!file_exists(IP_SEARCH_LOG_DIR)) {
+            wp_mkdir_p(IP_SEARCH_LOG_DIR);
+            
+            // Створюємо index.php для безпеки
+            file_put_contents(IP_SEARCH_LOG_DIR . '/index.php', '<?php // Silence is golden');
+            
+            // Створюємо .htaccess з правилами обмеження доступу
+            $htaccess_content = "Order deny,allow\nDeny from all";
+            file_put_contents(IP_SEARCH_LOG_DIR . '/.htaccess', $htaccess_content);
+        } else {
+            // Переконуємося, що .htaccess існує і має правильний вміст
+            $htaccess_file = IP_SEARCH_LOG_DIR . '/.htaccess';
+            if (!file_exists($htaccess_file) || file_get_contents($htaccess_file) !== "Order deny,allow\nDeny from all") {
+                $htaccess_content = "Order deny,allow\nDeny from all";
+                file_put_contents($htaccess_file, $htaccess_content);
+            }
+        }
+        
+        if (!file_exists($this->log_file)) {
+            $header = "timestamp,search_query\n";
+            file_put_contents($this->log_file, $header);
+        }
+        
+        // Перевіряємо права доступу
+        if (!is_writable($this->log_file)) {
+            // Спробуємо встановити права на запис
+            chmod($this->log_file, 0666);
+        }
+    }
+    
+    // Log search query to file
+    private function write_to_log($search_term) {
+        $this->init_log_file();
+        
+        $timestamp = current_time('mysql');
+        $log_entry = sprintf("%s,%s\n", 
+            $timestamp,
+            str_replace(',', '\\,', $search_term) // Екрануємо коми
+        );
+        
+        return file_put_contents($this->log_file, $log_entry, FILE_APPEND);
     }
     
     // Додаємо посилання на сторінку журналу в таблиці плагінів
@@ -96,8 +152,13 @@ class IP_Search_Logger {
             return;
         }
         
+        // CSS файли
         wp_enqueue_style('ip-search-log-admin', plugin_dir_url(__FILE__) . 'assets/css/admin.css', array(), '1.0.0');
-        wp_enqueue_script('ip-search-log-admin', plugin_dir_url(__FILE__) . 'assets/js/admin.js', array('jquery'), '1.0.0', true);
+        wp_enqueue_style('jquery-ui-css', 'https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css', array(), '1.12.1');
+        
+        // JS файли
+        wp_enqueue_script('jquery-ui-datepicker'); // Вбудований у WordPress
+        wp_enqueue_script('ip-search-log-admin', plugin_dir_url(__FILE__) . 'assets/js/admin.js', array('jquery', 'jquery-ui-datepicker'), '1.0.0', true);
         
         wp_localize_script('ip-search-log-admin', 'ipSearchLogData', array(
             'ajaxurl' => admin_url('admin-ajax.php'),
@@ -123,13 +184,13 @@ class IP_Search_Logger {
             <div class="tablenav top">
                 <div class="alignleft actions">
                     <button id="clear-search-log" class="button button-primary"><?php _e('Clear All Records', 'ip-search-log'); ?></button>
-                    <button id="export-search-log" class="button"><?php _e('Export', 'ip-search-log'); ?></button>
                 </div>
             </div>
             
             <div id="search-log-message" class="notice" style="display:none;"></div>
             
-            <form id="search-log-filter" method="post">
+            <form id="search-log-filter" method="get">
+                <input type="hidden" name="page" value="ip-search-log" />
                 <?php $list_table->display(); ?>
             </form>
         </div>
@@ -151,21 +212,12 @@ class IP_Search_Logger {
     
     // Log search query
     public function log_search_query($query) {
-        global $wpdb;
-        
         // Check if it's a search query
         if ($query->is_main_query() && $query->is_search() && !is_admin()) {
             $search_term = sanitize_text_field($query->get('s'));
-            $ip_address = $this->get_client_ip();
             
-            // Insert or update search query record
-            $wpdb->query($wpdb->prepare(
-                "INSERT INTO {$this->table_name} (search_query, ip_address) 
-                VALUES (%s, %s) 
-                ON DUPLICATE KEY UPDATE query_count = query_count + 1, last_query_date = CURRENT_TIMESTAMP",
-                $search_term,
-                $ip_address
-            ));
+            // Записуємо в файл логів
+            $this->write_to_log($search_term);
         }
     }
     
@@ -176,10 +228,9 @@ class IP_Search_Logger {
             wp_send_json_error(__('An error occurred while clearing records.', 'ip-search-log'));
         }
         
-        global $wpdb;
-        
-        // Clear database table
-        $result = $wpdb->query("TRUNCATE TABLE {$this->table_name}");
+        // Очищаємо файл логів, залишаючи заголовок
+        $header = "timestamp,search_query\n";
+        $result = file_put_contents($this->log_file, $header);
         
         if ($result !== false) {
             wp_send_json_success(__('All records have been successfully cleared.', 'ip-search-log'));
@@ -187,66 +238,34 @@ class IP_Search_Logger {
             wp_send_json_error(__('An error occurred while clearing records.', 'ip-search-log'));
         }
     }
-    
-    // AJAX handler for exporting search log
-    public function ajax_export_search_log() {
-        // Check nonce
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'ip_search_log_nonce')) {
-            wp_send_json_error(__('An error occurred during export.', 'ip-search-log'));
-        }
-        
-        // Initialize exporter
-        $exporter = new Search_Log_Exporter();
-        
-        // Try XLSX export first - встановлюємо примусово формат XLSX
-        $result = $exporter->export_xlsx();
-        
-        if (isset($result['success']) && $result['success']) {
-            wp_send_json_success(array(
-                'message' => $result['message'],
-                'download_url' => $result['file_url'],
-                'download_text' => __('Download XLSX', 'ip-search-log')
-            ));
-        } else {
-            // Fall back to CSV export тільки якщо XLSX не вдалося
-            $result = $exporter->export_csv();
-            if (isset($result['success']) && $result['success']) {
-                wp_send_json_success(array(
-                    'message' => $result['message'],
-                    'download_url' => $result['file_url'],
-                    'download_text' => __('Download CSV', 'ip-search-log')
-                ));
-            } else {
-                wp_send_json_error(__('An error occurred during export.', 'ip-search-log'));
-            }
-        }
-    }
-    
-    // Helper method to get client IP
-    private function get_client_ip() {
-        $ip_keys = array('HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_X_FORWARDED', 'HTTP_X_CLUSTER_CLIENT_IP', 'HTTP_FORWARDED_FOR', 'HTTP_FORWARDED', 'REMOTE_ADDR');
-        
-        foreach ($ip_keys as $key) {
-            if (isset($_SERVER[$key]) && filter_var($_SERVER[$key], FILTER_VALIDATE_IP)) {
-                return sanitize_text_field($_SERVER[$key]);
-            }
-        }
-        
-        return '127.0.0.1'; // Default IP if none found
-    }
 }
-
-// Initialize the plugin
-$ip_search_logger = new IP_Search_Logger();
 
 // Adding update check via GitHub
 require_once plugin_dir_path( __FILE__ ) . 'updates/github-updater.php';
-if ( function_exists( 'ip_search_log_github_updater_init' ) ) {
-    ip_search_log_github_updater_init(
-        __FILE__,       // Plugin file path
-        'pekarskyi',     // Your GitHub username
-        '',              // Access token (empty)
-        'ip-search-log' // Repository name (optional)
-        // Other parameters are determined automatically
-    );
+
+$github_username = 'pekarskyi'; // Вказуємо ім'я користувача GitHub
+$repo_name = 'ip-search-log'; // Вказуємо ім'я репозиторію GitHub, наприклад ip-wp-github-updater
+$prefix = 'ip_search_log'; // Встановлюємо унікальний префікс плагіну, наприклад ip_wp_github_updater
+
+// Ініціалізуємо систему оновлення плагіну з GitHub
+if ( function_exists( 'ip_github_updater_load' ) ) {
+    // Завантажуємо файл оновлювача з нашим префіксом
+    ip_github_updater_load($prefix);
+    
+    // Формуємо назву функції оновлення з префіксу
+    $updater_function = $prefix . '_github_updater_init';   
+    
+    // Після завантаження наша функція оновлення повинна бути доступна
+    if ( function_exists( $updater_function ) ) {
+        call_user_func(
+            $updater_function,
+            __FILE__,       // Plugin file path
+            $github_username, // Your GitHub username
+            '',              // Access token (empty)
+            $repo_name       // Repository name (на основі префіксу)
+        );
+    }
 } 
+
+// Initialize the plugin - додаємо ініціалізацію плагіну
+$ip_search_logger = new IP_Search_Logger(); 

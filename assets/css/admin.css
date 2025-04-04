@@ -28,6 +28,30 @@
     text-decoration: none;
 }
 
+/* Filter form styles */
+.search-box {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.search-box input[type="search"],
+.search-box input[type="text"] {
+    width: 180px;
+    height: 30px;
+    padding: 0 8px;
+}
+
+.date-picker {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>');
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 16px;
+    padding-right: 30px;
+}
+
 /* Modal confirmation window styles */
 .modal {
     position: fixed;
@@ -61,4 +85,66 @@
 
 .modal-footer button {
     margin-left: 10px;
+}
+
+/* Стилі для jQuery UI datepicker */
+.ui-datepicker {
+    padding: 10px;
+    background: #fff;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 10000 !important;
+}
+
+.ui-datepicker-header {
+    padding: 5px 0;
+    background: #f7f7f7;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 5px;
+}
+
+.ui-datepicker-title {
+    text-align: center;
+    font-weight: bold;
+}
+
+.ui-datepicker-prev,
+.ui-datepicker-next {
+    cursor: pointer;
+    position: absolute;
+    top: 8px;
+    width: 20px;
+    height: 20px;
+    text-indent: -9999px;
+    overflow: hidden;
+}
+
+.ui-datepicker-prev {
+    left: 10px;
+}
+
+.ui-datepicker-next {
+    right: 10px;
+}
+
+.ui-datepicker-calendar {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.ui-datepicker-calendar th {
+    padding: 3px;
+    text-align: center;
+}
+
+.ui-datepicker-calendar td {
+    padding: 3px;
+    text-align: center;
+}
+
+.ui-datepicker-calendar a {
+    display: block;
+    text-decoration: none;
+    text-align: center;
+    padding: 2px 5px;
 }
